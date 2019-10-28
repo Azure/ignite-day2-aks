@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: captureorder
+spec:
+  selector:
+      matchLabels:
+        app: captureorder
+  replicas: 2
+  template:
+      metadata:
+        labels:
+            app: captureorder
+      spec:
+        containers:
+        - name: captureorder
+          image: azch/captureorder
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /healthz
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /healthz
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+          - name: MONGOHOST
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: mongoHost
+          - name: MONGOUSER
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: mongoUser
+          - name: MONGOPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: mongoPassword
+          ports:
+          - containerPort: 8080

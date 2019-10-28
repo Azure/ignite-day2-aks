@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: frontend
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: frontend.52.255.217.198.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: 80
+        path: /

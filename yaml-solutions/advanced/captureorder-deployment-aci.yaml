@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: captureorder-aci
+spec:
+  selector:
+      matchLabels:
+        app: captureorder
+  template:
+      metadata:
+        labels:
+            app: captureorder
+      spec:
+        containers:
+        - name: captureorder
+          image: azch/captureorder
+          imagePullPolicy: Always
+          env:
+          - name: TEAMNAME
+            value: "team-azch"
+          - name: MONGOHOST
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: mongoHost
+          - name: MONGOUSER
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: mongoUser
+          - name: MONGOPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb
+                key: mongoPassword
+          ports:
+          - containerPort: 8080
+        nodeSelector:
+          kubernetes.io/role: agent
+          beta.kubernetes.io/os: linux
+          type: virtual-kubelet
+        tolerations:
+        - key: virtual-kubelet.io/provider
+          operator: Exists
+        - key: azure.com/aci
+          effect: NoSchedule 

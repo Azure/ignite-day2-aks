@@ -110,17 +110,25 @@ You'll notice that the "captureorder" service is in a CrashLoopBack/error state,
 
 ## Troubleshoot Application with Azure Container Insights
 
+In the Azure portal navigate to your AKS cluster, which is listed under "Kubernetes Service. Once you have selected your cluster, select "Monitor Containers" in the center screen navigation.
 
+![Azure Monitor For Containers](./img/monitor-center.png "Azure Monitor For Containers")
 
-You'll see that the "connection is refused" and if we look at the Environmental Variable on the right side we can see we have the wrong-password for the MongoDB server.
+Now select "Controllers" from the top navigation and scroll to you find the "captureorder" controller. Now select "live logs" on the right panel to see the logs for the captureorder service.
 
+You'll see that the "connection is refused" and if we look at the Environmental Variable on the right side we can see we have  "wrong-password" for the MongoDB server. Since we have the wrong password our app is unable to make a connection to the MongoDB database that it's dependant on.
+
+![Live Logs](./img/live-log.png "Live Logs")
+
+Environmental Variables
+![Environmental Variables](./img/env.png "Environmental Variables")
 
 Let's update the password to be correct for the the MondoDB database connection
 
 ```bash
 kubectl create secret generic mongodb --from-literal=mongoHost="orders-mongo-mongodb.default.svc.cluster.local" \
 --from-literal=mongoUser="orders-user" \
---from-literal=mongoPassword="" --dry-run -o yaml | kubectl apply -f -
+--from-literal=mongoPassword="orders-password" --dry-run -o yaml | kubectl apply -f -
 ```
 
 Now restart the containers to pickup their new environmental variables.
@@ -134,6 +142,17 @@ Now when you look at the pods they should all be in a "running" state.
 ```bash
 kubectl get pods
 ```
+
+```bash
+NAME                                   READY   STATUS    RESTARTS   AGEazure-vote-back-5966fd4fd4-96kbx       1/1     Running   0          84m
+azure-vote-front-67fc95647d-wxdqf      1/1     Running   0          84m
+captureorder-894bbf6d7-fkhsb           1/1     Running   0          19s
+captureorder-894bbf6d7-h95tp           1/1     Running   0          19s
+frontend-794fbc469-2km8p               1/1     Running   0          39m
+orders-mongo-mongodb-9d7ccf7f5-hzpg8   1/1     Running   0          42m
+```
+
+Now let's move on to making sure our app can scale to meet demands of customer usage.
 
 ## Scale Application
 

@@ -5,7 +5,7 @@ This is the repository for Ignite Session - Managing Azure Kubernetes Service: W
 In this workshop you'll walk through the following task:
 
 - Deploy application to AKS
-- Use Container Insights to trouvleshoot application issues
+- Use Container Insights to troubleshoot application issues
 - Scale application to meet request demand
 - View and fix security recommendations from Azure Security Center
 - Apply Policy to govern your AKS resources
@@ -16,9 +16,11 @@ In this workshop you'll walk through the following task:
 1. Login to Azure Portal at <http://portal.azure.com.>
 2. Open the Azure Cloud Shell and choose Bash Shell (do not choose Powershell)
 
-   ![Azure Cloud Shell](./img/cloud-shell.png "Azure Cloud Shell")
+    ![Azure Cloud Shell](./img/cloud-shell.png "Azure Cloud Shell")
 
-3. The first time Cloud Shell is started will require you to create a storage account.
+3. The first time Cloud Shell is started will require you to create a storage account. __Make sure you click on"Show Advanced Settings"__ Use the existing resource group and create a new storage account and file share.
+
+    ![Azure Cloud Shell Create Storage Account](./img/stg-account.png "Azure Cloud Shell Create Storage Account")
 
 4. Once your cloud shell is started, clone the workshop repo into the cloud shell environment
 
@@ -30,6 +32,12 @@ In this workshop you'll walk through the following task:
 
 ```bash
 az aks get-credentials -n <Cluster_Name_> -g <resource_group>
+```
+
+**Tip: You can get your cluster name and resource group with the following command:
+
+```bash
+az aks list
 ```
 
 ## Deploy Application
@@ -49,7 +57,7 @@ You'll first need to setup Helm, as we'll use it to deploy the MongoDB database.
 Apply the following manifest to setup RBAC for helm:
 
 ```bash
-kubectl apply -f ./manifest/helm-rbac.yaml
+kubectl apply -f ignite-day2-aks/manifest/helm-rbac.yaml
 ```
 
 Now we will initialize Helm and it will be deployed to the cluster
@@ -57,6 +65,8 @@ Now we will initialize Helm and it will be deployed to the cluster
 ```bash
 helm init --service-account tiller
 ```
+
+**wait approximately 20 seconds before running the next command**
 
 Now that we have Helm setup we'll now deploy are MongoDB database
 
@@ -75,7 +85,7 @@ kubectl create secret generic mongodb --from-literal=mongoHost="orders-mongo-mon
 To deploy the application we will need to deploy a set of pre-created set of Kubernetes manifest files. Perform the following command in the cloud shell to deploy the manifest:
 
 ```bash
-kubectl apply -f ./manifest/app .
+kubectl apply -f ignite-day2-aks/manifest/app
 ```
 
 Now that your app is deployed you can check the status of it with the following command:
@@ -86,13 +96,46 @@ kubectl get pods
 You should see the following output:
 
 ```bash
-//TODO: add screenshot
+odl_user@Azure:~$ kubectl get pods
+NAME                                   READY   STATUS             RESTARTS   AGE
+azure-vote-back-5966fd4fd4-w7tnn       1/1     Running            0          14m
+azure-vote-front-67fc95647d-kgls8      1/1     Running            0          14m
+captureorder-894bbf6d7-crdbd           0/1     Error              1          62s
+captureorder-894bbf6d7-sgvgf           0/1     CrashLoopBackOff   2          62s
+frontend-794fbc469-7rk7z               1/1     Running            0          62s
+orders-mongo-mongodb-9d7ccf7f5-wm995   1/1     Running            0          2m7s
 ```
 
-You'll notice that the app is in a CrashLoopBack, so in the next section we will troubleshoot the issue with Azure Container Insights
+You'll notice that the "captureorder" service is in a CrashLoopBack/error state, so in the next section we will troubleshoot the issue with Azure Container Insights
 
 ## Troubleshoot Application with Azure Container Insights
 
+
+
+You'll see that the "connection is refused" and if we look at the Environmental Variable on the right side we can see we have the wrong-password for the MongoDB server.
+
+
+Let's update the password to be correct for the the MondoDB database connection
+
+```bash
+kubectl create secret generic mongodb --from-literal=mongoHost="orders-mongo-mongodb.default.svc.cluster.local" \
+--from-literal=mongoUser="orders-user" \
+--from-literal=mongoPassword="" --dry-run -o yaml | kubectl apply -f -
+```
+
+Now restart the containers to pickup their new environmental variables.
+
+```bash
+kubectl delete pods -l app=captureorder
+```
+
+Now when you look at the pods they should all be in a "running" state.
+
+```bash
+kubectl get pods
+```
+
+## Scale Application
 
 ## View and remediate recommendations from Azure Security Center
 

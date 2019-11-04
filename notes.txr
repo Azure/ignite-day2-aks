@@ -1,3 +1,9 @@
 kubectl create secret generic mongodb --from-literal=mongoHost="orders-mongo-mongodb.default.svc.cluster.local" \
 --from-literal=mongoUser="orders-user" \
 --from-literal=mongoPassword="wrong-password" --dry-run -o yaml | kubectl apply -f -
+
+
+kubectl delete pods -l app=captureorder
+
+labels:
+            app: captureorder

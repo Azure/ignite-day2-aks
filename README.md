@@ -121,6 +121,7 @@ You'll see that the "connection is refused" and if we look at the Environmental 
 ![Live Logs](./img/live-log.png "Live Logs")
 
 Environmental Variables
+
 ![Environmental Variables](./img/env.png "Environmental Variables")
 
 Let's update the password to be correct for the the MondoDB database connection

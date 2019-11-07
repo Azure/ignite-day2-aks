@@ -28,10 +28,21 @@ In this workshop you'll walk through the following task:
    git clone https://github.com/Azure/ignite-day2-aks
    ```
 
-5. Now you'll need to get your credentials for your Kubernetes cluster. Run the below command to pull down the credentials:
+5. Now you'll need to get your credentials for your Kubernetes cluster. Run the below command to pull down the credentials.
+
+Make sure you use your id for the resource group name and cluster name
+
+example:
 
 ```bash
-az aks get-credentials -n <Cluster_Name_> -g <resource_group>
+RGNAME=ODL-aks-<id>
+echo export RGNAME=$RGNAME >> ~/.bashrc
+CLUSTERNAME=ignite-<id>
+echo export CLUSTERNAME=$CLUSTERNAME >> ~/.bashrc
+```
+
+```bash
+az aks get-credentials -n $CLUSTERNAME -g $RGNAME
 ```
 
 **Tip: You can get your cluster name and resource group with the following command:
@@ -73,7 +84,6 @@ Now that we have Helm setup we'll now deploy are MongoDB database
 ```bash
 helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge
 ```
-***This will take a couple minutes to fully deploy***
 
 We'll now create the secrets the application will use to connect to the MongoDB Database
 
@@ -93,6 +103,7 @@ Now that your app is deployed you can check the status of it with the following 
 ```bash
 kubectl get pods
 ```
+
 You should see the following output:
 
 ```bash
@@ -154,6 +165,28 @@ orders-mongo-mongodb-9d7ccf7f5-hzpg8   1/1     Running   0          42m
 ```
 
 Now let's move on to making sure our app can scale to meet demands of customer usage.
+
+## Assign policies for AKS
+
+Now we will setup pre-created policies for AKS using Azure Policy. We will setup a policy to only allow for images to be pulled from a specific container registry and also a policy to limit the use of privileged containers.
+
+In the Azure portal type "policy" in the search bar and select "Policy".
+
+Now in the "Policy" blade select the following.
+
+1. Assignments
+2. Assign Policy
+
+![Assign Policy](./img/policy-assign.png "Assign Policy")
+
+Now set the following parameters
+
+* Scope - Choose your subscription and AKS resource group
+* Policy Definition - Search for AKS and choose [Limited Preview]: Ensure only allowed container images in AKS
+* Select __Next__
+* Allowed Container Images Regex - ^.+azurecr.io/.+$
+* Select __Review + Create__
+
 
 ## Scale Application
 

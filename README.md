@@ -164,13 +164,17 @@ frontend-794fbc469-2km8p               1/1     Running   0          39m
 orders-mongo-mongodb-9d7ccf7f5-hzpg8   1/1     Running   0          42m
 ```
 
-Now let's move on to making sure our app can scale to meet demands of customer usage.
-
 ## Assign policies for AKS
 
 Now we will setup pre-created policies for AKS using Azure Policy. We will setup a policy to only allow for images to be pulled from a specific container registry and also a policy to limit the use of privileged containers.
 
-In the Azure portal type "policy" in the search bar and select "Policy".
+You first need to enable the Policy addon for your AKS Cluster
+
+Find your AKS cluster under Kubernetes Service in the portal. Then select __Policy__ on the left side and then click enable addon
+
+![Enable Policy](./img/policy-enable.png "Enable Policy")
+
+Now let's go ahead and assign some policies. In the Azure portal type "policy" in the search bar and select "Policy".
 
 Now in the "Policy" blade select the following.
 
@@ -183,14 +187,76 @@ Now set the following parameters
 
 * Scope - Choose your subscription and AKS resource group
 * Policy Definition - Search for AKS and choose [Limited Preview]: Ensure only allowed container images in AKS
+* Enforcement - Disabled
 * Select __Next__
 * Allowed Container Images Regex - ^.+azurecr.io/.+$
 * Select __Review + Create__
 
+Also add the following policy
+
+* Scope - Choose your subscription and AKS resource group
+* Policy Definition - Search for AKS and choose [Limited Preview]: Do not allow privileged containers in AKS
+* Enforcement - Disabled
+* Select __Review + Create__
+
+__We will come back to look at how policies work in a later section, as it takes a few minutes for them to initialize and take effect.__
 
 ## Scale Application
 
-## View and remediate recommendations from Azure Security Center
+Now that are awesome app has become hugely popular we need to ensure that it will scale to meet demand.
+
+Let's first run a load test on the app. We will use Azure Container Instances to run a load test against the capture-order API.
+
+Run the following command to spin up a container instance. Make sure you put in the correct IP parameter for your capture order service.
+
+You can get the external IP with the following command:
+
+```bash
+kubectl get svc
+
+captureorder           LoadBalancer   10.0.127.97   52.228.224.149   80:31195/TCP   36m
+```
+Now run the following command in substitute your external service IP:
+
+```bash
+az container create -g $RGNAME -n loadtest --image azch/loadtest --restart-policy Never -e SERVICE_ENDPOINT=https://<hostname order capture service>
+```
+
+Once the container is running you can view the logs and review the results. It will run a series of load test, which will increase latency over 2 minutes.
+
+```bash
+az container logs -g $RGNAME -n loadtest
+```
+To help automatically scale we will use a Kubernetes Horizontal Autoscale Policy:
+
+```bash
+kubectl apply -f ignite-day2-aks/manifest/app/hpa.yaml
+```
+
+After this is applied we will run the load test again and we'll see how are application automatically scales.
+
+```bash
+az container create -g $RGNAME -n loadtest2 --image azch/loadtest --restart-policy Never -e SERVICE_ENDPOINT=https://<hostname order capture service>
+```
+After running the load test you can run the following command to see that new pods are automatically being created to handle the increased load
+
+```bash
+kubectl get pods -w
+```
+
+Now let's go back and check our Azure policies to see the audit information
+
+## View Policy Compliance with Azure Policy For AKS to govern resources
+
+In the portal search for __Policy__. Ensure that you change the scope to only include your resource group.
+
+![Scope Policy](./img/policy-scope.png "Scope Policy")
+
+In the policy section view select __Compliance__. Now you will see, which resources are in or out of compliance.
+
+You will notice that the "Enforce Internal Load Balancer" is out of compliance. Since we did not set it to __Enforce__ it just audits for the compliance violation. If you were to set Enforcement to Enabled, then it would deny the resource being created. 
+
+## View recommendations from Azure Security Center
 
 
 ## Apply a policy with Azure Policy For AKS to govern resources

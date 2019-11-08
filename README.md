@@ -18,7 +18,7 @@ In this workshop you'll walk through the following task:
 
     ![Azure Cloud Shell](./img/cloud-shell.png "Azure Cloud Shell")
 
-3. The first time Cloud Shell is started will require you to create a storage account. __Make sure you click on"Show Advanced Settings"__ Use the existing resource group and create a new storage account and file share.
+3. The first time Cloud Shell is started will require you to create a storage account. __Make sure you click on"Show Advanced Settings"__ Use the existing resource group and create a new storage account and file share. You will need to use a unique name with no dashes or special characters.
 
     ![Azure Cloud Shell Create Storage Account](./img/stg-account.png "Azure Cloud Shell Create Storage Account")
 

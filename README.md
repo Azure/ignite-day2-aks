@@ -14,7 +14,7 @@ In this workshop you'll walk through the following task:
 ## Connect to AKS cluster
 
 1. Login to Azure Portal at <http://portal.azure.com>
-2. Open the Azure Cloud Shell and choose Bash Shell (do not choose Powershell)
+2. Open the Azure Cloud Shell and choose Bash Shell (do not choose Powershell - see step 3 for informtion on creating storage account)
 
     ![Azure Cloud Shell](./img/cloud-shell.png "Azure Cloud Shell")
 
@@ -80,7 +80,7 @@ helm init --service-account tiller
 
 **wait approximately 20 seconds before running the next command**
 
-Now that we have Helm setup we'll now deploy are MongoDB database
+Now that we have Helm setup, we'll now deploy our MongoDB database
 
 ```bash
 helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge
@@ -93,7 +93,7 @@ kubectl create secret generic mongodb --from-literal=mongoHost="orders-mongo-mon
 ```
 
 
-To deploy the application we will need to deploy a set of pre-created set of Kubernetes manifest files. Perform the following command in the cloud shell to deploy the manifest:
+To deploy the application we will need to deploy a pre-created set of Kubernetes manifest files. Perform the following command in the cloud shell to deploy the manifest:
 
 ```bash
 kubectl apply -f ignite-day2-aks/manifest/app
@@ -208,6 +208,7 @@ Now set the following parameters
 * Select __Next__
 * Allowed Container Images Regex - ^.+azurecr.io/.+$
 * Select __Review + Create__
+* Select __Create__ 
 
 Also add the following policy
 
@@ -215,12 +216,13 @@ Also add the following policy
 * Policy Definition - Search for AKS and choose [Limited Preview]: Do not allow privileged containers in AKS
 * Enforcement - Disabled
 * Select __Review + Create__
+* Select __Create__
 
 __We will come back to look at how policies work in a later section, as it takes a few minutes for them to initialize and take effect.__
 
 ## Scale Application
 
-Now that are awesome app has become hugely popular we need to ensure that it will scale to meet demand.
+Now that our awesome app has become hugely popular, we need to ensure that it will scale to meet demand.
 
 Let's first run a load test on the app. We will use Azure Container Instances to run a load test against the capture-order API.
 
@@ -233,29 +235,29 @@ kubectl get svc
 
 captureorder           LoadBalancer   10.0.127.97   52.228.224.149   80:31195/TCP   36m
 ```
-Now run the following command in substitute your external service IP:
+Now run the following command and substitute your external service IP:
 
 ```bash
 az container create -g $RGNAME -n loadtest --image azch/loadtest --restart-policy Never -e SERVICE_ENDPOINT=https://<hostname order capture service>
 ```
 
-Once the container is running you can view the logs and review the results. It will run a series of load test, which will increase latency over 2 minutes.
+Once the container is running, you can view the logs and review the results. It will run a series of load test, which will increase latency over 2 minutes.
 
 ```bash
 az container logs -g $RGNAME -n loadtest
 ```
-To help automatically scale we will use a Kubernetes Horizontal Autoscale Policy:
+To help automatically scale, we will use a Kubernetes Horizontal Autoscale Policy:
 
 ```bash
 kubectl apply -f ignite-day2-aks/manifest/app/hpa.yaml
 ```
 
-After this is applied we will run the load test again and we'll see how are application automatically scales.
+After this is applied, we will run the load test again, and we'll see how are application automatically scales.
 
 ```bash
 az container create -g $RGNAME -n loadtest2 --image azch/loadtest --restart-policy Never -e SERVICE_ENDPOINT=https://<hostname order capture service>
 ```
-After running the load test you can run the following command to see that new pods are automatically being created to handle the increased load
+After running the load test, you can run the following command to see that new pods are automatically being created to handle the increased load
 
 ```bash
 kubectl get pods -w
@@ -271,7 +273,7 @@ In the portal search for __Policy__. Ensure that you change the scope to only in
 
 In the policy section view select __Compliance__. Now you will see, which resources are in or out of compliance.
 
-You will notice that the "Enforce Internal Load Balancer" is out of compliance. Since we did not set it to __Enforce__ it just audits for the compliance violation. If you were to set Enforcement to Enabled, then it would deny the resource being created.
+You will notice that the "Enforce Internal Load Balancer" is out of compliance. Since we did not set it to __Enforce__, it just audits for the compliance violation. If you were to set __Enforcement__ to __Enabled__, then it would deny the resource being created.
 
 ## View recommendations from Azure Security Center
 
@@ -281,11 +283,11 @@ In the portal search for __Security Center__. Then perform the following steps
 - Select "Containers"
 - Select your cluster
 
-You should see the recommendations blade like the following:
+The recommendations blade should look like the following:
 
 ![Security Center](./img/security-center.png "Security Center")
 
-You can now look at the different recommendation that Security Center makes to help apply security best practices for your cluster.
+You can now look at the different recommendation(s) that Security Center makes to help apply security best practices for your cluster.
 
 ## Legal Notices
 

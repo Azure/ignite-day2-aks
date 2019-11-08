@@ -255,15 +255,21 @@ In the portal search for __Policy__. Ensure that you change the scope to only in
 
 In the policy section view select __Compliance__. Now you will see, which resources are in or out of compliance.
 
-You will notice that the "Enforce Internal Load Balancer" is out of compliance. Since we did not set it to __Enforce__ it just audits for the compliance violation. If you were to set Enforcement to Enabled, then it would deny the resource being created. 
+You will notice that the "Enforce Internal Load Balancer" is out of compliance. Since we did not set it to __Enforce__ it just audits for the compliance violation. If you were to set Enforcement to Enabled, then it would deny the resource being created.
 
 ## View recommendations from Azure Security Center
 
+In the portal search for __Security Center__. Then perform the following steps
 
-## Apply a policy with Azure Policy For AKS to govern resources
+- Choose "Compute and Apps" on the left side
+- Select "Containers"
+- Select your cluster
 
+You should see the recommendations blade like the following:
 
+![Security Center](./img/security-center.png "Security Center")
 
+You can now look at the different recommendation that Security Center makes to help apply security best practices for your cluster.
 
 ## Legal Notices
 

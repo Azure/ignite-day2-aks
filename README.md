@@ -165,6 +165,22 @@ frontend-794fbc469-2km8p               1/1     Running   0          39m
 orders-mongo-mongodb-9d7ccf7f5-hzpg8   1/1     Running   0          42m
 ```
 
+You can also test the application by running a curl command  
+
+__Note__ You need to find the external ip by running the following command
+
+```bash
+kubectl get service captureorder
+```
+
+Now in the following command put your service public IP in the POST section
+
+```bash
+curl -d '{"EmailAddress": "email@domain.com", "Product": "prod-1", "Total": 100}' -H "Content-Type: application/json" -X POST http://[Your Service Public LoadBalancer IP]/v1/order
+```
+
+You should see that it posted an order.
+
 ## Assign policies for AKS
 
 Now we will setup pre-created policies for AKS using Azure Policy. We will setup a policy to only allow for images to be pulled from a specific container registry and also a policy to limit the use of privileged containers.

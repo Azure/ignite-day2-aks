@@ -32,13 +32,14 @@ In this workshop you'll walk through the following task:
 
 Make sure you use your id for the resource group name and cluster name
 
-example:
+Example of where to find your id
+
+
+![ID](./img/id.png "ID")
 
 ```bash
 RGNAME=ODL-aks-<id>
-echo export RGNAME=$RGNAME >> ~/.bashrc
 CLUSTERNAME=ignite-<id>
-echo export CLUSTERNAME=$CLUSTERNAME >> ~/.bashrc
 ```
 
 ```bash
@@ -55,7 +56,7 @@ az aks list
 
 You'll be deploying the following application to your AKS Cluster
 
-   ![App Diagram](./img/app.png "Application Diagram")
+![App Diagram](./img/app.png "Application Diagram")
 
 The application consists of 3 components:
 
